@@ -318,6 +318,11 @@
       transform: translateY(var(--push-amount, 0));
     }
 
+    .dates-section[data-only-may] .date-column--month .month-row--may .month-row__align {
+      display: inline-block;
+      transform: translateY(calc(var(--may-offset-dir, 0) * var(--may-offset, 0px)));
+    }
+
     .date-column--month .date-label {
       width: auto;
       min-width: auto;
@@ -359,6 +364,10 @@
       width: 140px;
       min-width: 140px;
       flex-shrink: 0;
+    }
+
+    .date-row-pair .date-label:empty {
+      min-height: 1em;
     }
 
     /* Spacer = event block height - date row height - gap. Ensures date labels align with event tops. */
@@ -549,30 +558,30 @@
           <div class="month-row" data-month="april">
             <span class="date-label">APRIL</span>
           </div>
-          <div class="date-spacer" data-month="april"></div>
-          <div class="date-spacer" data-month="april"></div>
-          <div class="date-spacer" data-month="april"></div>
-          <div class="date-spacer date-spacer--single" data-month="april"></div>
-          <div class="date-spacer date-spacer--single" data-month="april"></div>
-          <div class="date-spacer date-spacer--single" data-month="april"></div>
-          <div class="date-spacer date-spacer--single" data-month="april"></div>
-          <div class="date-spacer date-spacer--single" data-month="april"></div>
-          <div class="date-spacer date-spacer--single" data-month="april"></div>
-          <div class="date-spacer date-spacer--single" data-month="april"></div>
-          <div class="date-spacer date-spacer--single" data-month="april"></div>
-          <div class="month-row" data-month="may">
-            <span class="date-label">MAY</span>
+          <div class="date-spacer" data-month="april" data-date="2025-04-03"></div>
+          <div class="date-spacer" data-month="april" data-date="2025-04-04"></div>
+          <div class="date-spacer" data-month="april" data-date="2025-04-05"></div>
+          <div class="date-spacer date-spacer--single" data-month="april" data-date="2025-04-07"></div>
+          <div class="date-spacer date-spacer--single" data-month="april" data-date="2025-04-10"></div>
+          <div class="date-spacer date-spacer--single" data-month="april" data-date="2025-04-11"></div>
+          <div class="date-spacer date-spacer--single" data-month="april" data-date="2025-04-12"></div>
+          <div class="date-spacer date-spacer--single" data-month="april" data-date="2025-04-14"></div>
+          <div class="date-spacer date-spacer--single" data-month="april" data-date="2025-04-17"></div>
+          <div class="date-spacer date-spacer--single" data-month="april" data-date="2025-04-19"></div>
+          <div class="date-spacer date-spacer--single" data-month="april" data-date="2025-04-20"></div>
+          <div class="month-row month-row--may" data-month="may">
+            <span class="month-row__align"><span class="date-label">MAY</span></span>
           </div>
-          <div class="date-spacer date-spacer--single" data-month="may"></div>
-          <div class="date-spacer date-spacer--single" data-month="may"></div>
-          <div class="date-spacer" data-month="may"></div>
-          <div class="date-spacer date-spacer--single" data-month="may"></div>
-          <div class="date-spacer date-spacer--single" data-month="may"></div>
-          <div class="date-spacer date-spacer--single" data-month="may"></div>
-          <div class="date-spacer date-spacer--single" data-month="may"></div>
-          <div class="date-spacer date-spacer--single" data-month="may"></div>
-          <div class="date-spacer date-spacer--single" data-month="may"></div>
-          <div class="date-spacer date-spacer--single" data-month="may"></div>
+          <div class="date-spacer date-spacer--single" data-month="may" data-date="2025-05-07"></div>
+          <div class="date-spacer date-spacer--single" data-month="may" data-date="2025-05-08"></div>
+          <div class="date-spacer" data-month="may" data-date="2025-05-09"></div>
+          <div class="date-spacer date-spacer--single" data-month="may" data-date="2025-05-10"></div>
+          <div class="date-spacer date-spacer--single" data-month="may" data-date="2025-05-11"></div>
+          <div class="date-spacer date-spacer--single" data-month="may" data-date="2025-05-12"></div>
+          <div class="date-spacer date-spacer--single" data-month="may" data-date="2025-05-14"></div>
+          <div class="date-spacer date-spacer--single" data-month="may" data-date="2025-05-15"></div>
+          <div class="date-spacer date-spacer--single" data-month="may" data-date="2025-05-16"></div>
+          <div class="date-spacer date-spacer--single" data-month="may" data-date="2025-05-17"></div>
         </div>
         <div class="date-column date-column--date-day">
           <div class="date-row-pair" data-date="2025-04-03">
@@ -592,74 +601,92 @@
           <div class="date-spacer"></div>
           <div class="date-row-pair" data-date="2025-04-07">
             <span class="date-label">TUESDAY 7TH</span>
+            <span class="date-label"></span>
           </div>
           <div class="date-spacer date-spacer--single" data-month="may"></div>
           <div class="date-row-pair" data-date="2025-04-10">
             <span class="date-label">FRIDAY 10TH</span>
+            <span class="date-label"></span>
           </div>
           <div class="date-spacer date-spacer--single" data-month="may"></div>
           <div class="date-row-pair" data-date="2025-04-11">
             <span class="date-label">SATURDAY 11TH</span>
+            <span class="date-label"></span>
           </div>
           <div class="date-spacer date-spacer--single" data-month="may"></div>
           <div class="date-row-pair" data-date="2025-04-12">
             <span class="date-label">SUNDAY 12TH</span>
+            <span class="date-label"></span>
           </div>
           <div class="date-spacer date-spacer--single" data-month="may"></div>
           <div class="date-row-pair" data-date="2025-04-14">
             <span class="date-label">TUESDAY 14TH</span>
+            <span class="date-label"></span>
           </div>
           <div class="date-spacer date-spacer--single" data-month="may"></div>
           <div class="date-row-pair" data-date="2025-04-17">
             <span class="date-label">FRIDAY 17TH</span>
+            <span class="date-label"></span>
           </div>
           <div class="date-spacer date-spacer--single" data-month="may"></div>
           <div class="date-row-pair" data-date="2025-04-19">
             <span class="date-label">SATURDAY 19TH</span>
+            <span class="date-label"></span>
           </div>
           <div class="date-spacer date-spacer--single" data-month="may"></div>
           <div class="date-row-pair" data-date="2025-04-20">
             <span class="date-label">SUNDAY 19TH</span>
+            <span class="date-label"></span>
           </div>
           <div class="date-spacer date-spacer--single" data-month="may"></div>
           <div class="date-row-pair" data-date="2025-05-07">
             <span class="date-label">THURSDAY 7TH</span>
+            <span class="date-label"></span>
           </div>
           <div class="date-spacer date-spacer--single" data-month="may"></div>
           <div class="date-row-pair" data-date="2025-05-08">
             <span class="date-label">FRIDAY 8TH</span>
+            <span class="date-label"></span>
           </div>
           <div class="date-spacer date-spacer--single" data-month="may"></div>
           <div class="date-row-pair" data-date="2025-05-09">
             <span class="date-label">SATURDAY 9TH</span>
+            <span class="date-label"></span>
           </div>
           <div class="date-spacer"></div>
           <div class="date-row-pair" data-date="2025-05-10">
             <span class="date-label">SUNDAY 10TH</span>
+            <span class="date-label"></span>
           </div>
           <div class="date-spacer date-spacer--single" data-month="may"></div>
           <div class="date-row-pair" data-date="2025-05-11">
             <span class="date-label">MONDAY 11TH</span>
+            <span class="date-label"></span>
           </div>
           <div class="date-spacer date-spacer--single" data-month="may"></div>
           <div class="date-row-pair" data-date="2025-05-12">
             <span class="date-label">TUESDAY 12TH</span>
+            <span class="date-label"></span>
           </div>
           <div class="date-spacer date-spacer--single" data-month="may"></div>
           <div class="date-row-pair" data-date="2025-05-14">
             <span class="date-label">THURSDAY 14TH</span>
+            <span class="date-label"></span>
           </div>
           <div class="date-spacer date-spacer--single" data-month="may"></div>
           <div class="date-row-pair" data-date="2025-05-15">
             <span class="date-label">FRIDAY 15TH</span>
+            <span class="date-label"></span>
           </div>
           <div class="date-spacer date-spacer--single" data-month="may"></div>
           <div class="date-row-pair" data-date="2025-05-16">
             <span class="date-label">SATURDAY 16TH</span>
+            <span class="date-label"></span>
           </div>
           <div class="date-spacer date-spacer--single" data-month="may"></div>
           <div class="date-row-pair" data-date="2025-05-17">
             <span class="date-label">SUNDAY 17TH</span>
+            <span class="date-label"></span>
           </div>
           <div class="date-spacer date-spacer--single" data-month="may"></div>
         </div>
@@ -1214,11 +1241,49 @@
         const hasMay = !hasFilter || mayDates.some(d => visibleDates.has(d));
 
         document.querySelectorAll('.date-column--month [data-month="april"]').forEach(el => {
-          el.dataset.filtered = (hasFilter && !hasApril) ? 'true' : 'false';
+          if (el.dataset.date) {
+            el.dataset.filtered = (hasFilter && !visibleDates.has(el.dataset.date)) ? 'true' : 'false';
+          } else {
+            el.dataset.filtered = (hasFilter && !hasApril) ? 'true' : 'false';
+          }
         });
         document.querySelectorAll('.date-column--month [data-month="may"]').forEach(el => {
-          el.dataset.filtered = (hasFilter && !hasMay) ? 'true' : 'false';
+          if (el.dataset.date) {
+            el.dataset.filtered = (hasFilter && !visibleDates.has(el.dataset.date)) ? 'true' : 'false';
+          } else {
+            el.dataset.filtered = (hasFilter && !hasMay) ? 'true' : 'false';
+          }
         });
+
+        const ds = document.querySelector('.dates-section');
+        if (hasFilter && hasMay) {
+          if (ds) ds.dataset.onlyMay = 'true';
+          requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+            const mayRow = document.querySelector('.date-column--month .month-row[data-month="may"]');
+            const firstMayPair = Array.from(document.querySelectorAll('.date-column--date-day .date-row-pair')).find(function(p) {
+              return p.dataset.date && p.dataset.date.startsWith('2025-05') && p.dataset.filtered !== 'true';
+            });
+            const r1 = mayRow?.getBoundingClientRect();
+            const r2 = firstMayPair?.getBoundingClientRect();
+            const offset = r1 && r2 ? r1.top - r2.top : 0;
+            if (ds) {
+              if (offset !== 0) {
+                ds.style.setProperty('--may-offset', `${Math.abs(offset)}px`);
+                ds.style.setProperty('--may-offset-dir', offset > 0 ? '-1' : '1');
+              } else {
+                ds.style.setProperty('--may-offset', '4px');
+                ds.style.setProperty('--may-offset-dir', '1');
+              }
+              if (typeof updateStickyState === 'function') updateStickyState();
+            }
+            });
+          });
+        } else if (ds) {
+          delete ds.dataset.onlyMay;
+          ds.style.removeProperty('--may-offset');
+          ds.style.removeProperty('--may-offset-dir');
+        }
       }
 
       initEventDates();
