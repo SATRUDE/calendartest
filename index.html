@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calendar - Experiences shaped by Norway's quiet wilderness</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital@0;1&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* Figma design tokens */
+    :root {
+      --text-primary: #1a1a1a;
+      --background-brand: #f3f0db;
+      --stroke-primary: #1a1a1a;
+      --font-heading: 'Crimson Text', 'Mrs Eaves OT', Georgia, serif;
+      --font-body: 'Barlow', 'Trade Gothic Next LT Pro', sans-serif;
+      --space-xl: 96px;
+      --space-lg: 64px;
+      --space-md: 40px;
+      --page-margin: 48px;
+      --border-radius-pill: 9999px;
+      --border-width: 1px;
+      --heading-4xl: 55px;
+      --heading-3xl: 45px;
+      --body-md: 16px;
+      --body-sm: 14px;
+      --body-xs: 12px;
+      --line-height-tight: 1.05;
+      --line-height-body: 1.3;
+      --line-height-label: 1.4;
+      --letter-spacing-heading: -2px;
+      --letter-spacing-label: 4px;
+      --gutter: 20px;
+      --event-image-width: 530px;
+      --event-image-height: 397px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-body);
+      font-size: var(--body-md);
+      color: var(--text-primary);
+      background-color: var(--background-brand);
+      line-height: var(--line-height-body);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page {
+      max-width: 1728px;
+      margin: 0 auto;
+      padding: var(--page-margin);
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: var(--space-xl);
+    }
+
+    .header__title {
+      font-family: var(--font-heading);
+      font-size: var(--heading-4xl);
+      font-weight: 300;
+      font-style: italic;
+      line-height: var(--line-height-tight);
+      letter-spacing: var(--letter-spacing-heading);
+      margin-bottom: 16px;
+    }
+
+    .header__subtitle {
+      font-size: var(--body-md);
+      font-weight: 400;
+      margin-bottom: var(--space-md);
+      letter-spacing: 0;
+    }
+
+    .date-range-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      font-family: var(--font-body);
+      font-size: var(--body-md);
+      font-weight: 400;
+      color: var(--text-primary);
+      background: transparent;
+      border: var(--border-width) solid var(--stroke-primary);
+      border-radius: var(--border-radius-pill);
+      cursor: pointer;
+      letter-spacing: 0;
+    }
+
+    .date-range-btn::after {
+      content: '▼';
+      font-size: 10px;
+    }
+
+    /* Main layout - 4 columns: month | date | day label | events */
+    .calendar-layout {
+      display: flex;
+      gap: var(--space-lg);
+      margin-top: var(--space-lg);
+      align-items: flex-start;
+      padding-right: var(--space-lg);
+    }
+
+    /* Date columns - month | date+day pairs */
+    .dates-section {
+      flex-shrink: 0;
+      display: flex;
+      align-items: flex-start;
+      gap: var(--gutter);
+    }
+
+    .date-column {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .date-column--month {
+      min-width: 60px;
+    }
+
+    .month-row {
+      display: flex;
+      align-items: flex-start;
+      position: sticky;
+      top: 10px;
+      background-color: var(--background-brand);
+      padding-bottom: 4px;
+    }
+
+    .month-row.is-pushed {
+      transform: translateY(var(--push-amount, 0));
+    }
+
+    .date-column--month .date-label {
+      width: auto;
+      min-width: auto;
+    }
+
+    .date-column--date-day {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .date-row-pair {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      position: sticky;
+      top: 10px;
+      background-color: var(--background-brand);
+      padding-bottom: 4px;
+    }
+
+    .date-row-pair.is-pushed {
+      transform: translateY(var(--push-amount, 0));
+    }
+
+    .date-row-pair .date-label {
+      white-space: nowrap;
+    }
+
+    .date-label {
+      font-family: var(--font-body);
+      font-size: var(--body-xs);
+      font-weight: 400;
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-label);
+      line-height: var(--line-height-label);
+      color: var(--text-primary);
+      display: inline-block;
+      width: 140px;
+      min-width: 140px;
+      flex-shrink: 0;
+    }
+
+    /* Spacer = event block height - date row height - gap. Ensures date labels align with event tops. */
+    .date-spacer {
+      height: calc((var(--event-image-height) + var(--space-lg)) * 2 - 29px);
+    }
+
+    .date-spacer--single {
+      height: calc(var(--event-image-height) + var(--space-lg) - 29px);
+    }
+
+    .date-spacer--triple {
+      height: calc((var(--event-image-height) + var(--space-lg)) * 3 - 29px);
+    }
+
+    .date-column--month .date-spacer {
+      height: calc(22.5px + (var(--event-image-height) + var(--space-lg)) * 2 - 29px);
+    }
+
+    .date-column--month .date-spacer--single {
+      height: calc(22.5px + var(--event-image-height) + var(--space-lg) - 29px);
+    }
+
+
+    /* Right column - events */
+    .events-column {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .event-card {
+      display: flex;
+      gap: var(--gutter);
+      margin-bottom: var(--space-lg);
+      align-items: flex-start;
+    }
+
+    .event-card:last-child {
+      margin-bottom: 0;
+    }
+
+    .event-card__image {
+      flex-shrink: 0;
+      width: var(--event-image-width);
+      height: var(--event-image-height);
+      object-fit: cover;
+      background: #e8e5d8;
+    }
+
+    .event-card__content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .event-card__title {
+      font-family: var(--font-heading);
+      font-size: var(--heading-3xl);
+      font-weight: 300;
+      font-style: italic;
+      line-height: 1.1;
+      letter-spacing: var(--letter-spacing-heading);
+      margin-bottom: 8px;
+    }
+
+    .event-card__time {
+      font-size: var(--body-md);
+      margin-bottom: 8px;
+    }
+
+    .event-card__description {
+      font-size: var(--body-sm);
+      margin-bottom: var(--space-md);
+      color: var(--text-primary);
+    }
+
+    .event-card__actions {
+      display: flex;
+      align-items: center;
+      gap: var(--gutter);
+      flex-wrap: wrap;
+    }
+
+    .btn-book {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 6px 24px;
+      font-family: var(--font-body);
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 1.3;
+      letter-spacing: 0;
+      color: var(--text-primary);
+      background: var(--background-brand);
+      border: 1.5px solid var(--stroke-primary);
+      border-radius: 9999px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .btn-book__icon {
+      flex-shrink: 0;
+      width: 16px;
+      height: 16px;
+      font-size: 18px;
+    }
+
+    .btn-book__icon path {
+      stroke: currentColor;
+      stroke-width: 1.5;
+    }
+
+    .link-explore {
+      font-size: var(--body-sm);
+      color: var(--text-primary);
+      text-decoration: underline;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: inherit;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <h1 class="header__title">Calendar</h1>
+      <p class="header__subtitle">Experiences shaped by Norway's quiet wilderness</p>
+      <button class="date-range-btn" type="button">Date range</button>
+    </header>
+
+    <main class="calendar-layout">
+      <aside class="dates-section">
+        <div class="date-column date-column--month">
+          <div class="month-row">
+            <span class="date-label">APRIL</span>
+          </div>
+          <div class="date-spacer"></div>
+          <div class="date-spacer"></div>
+          <div class="date-spacer"></div>
+          <div class="date-spacer date-spacer--single"></div>
+          <div class="date-spacer date-spacer--single"></div>
+          <div class="date-spacer date-spacer--single"></div>
+          <div class="date-spacer date-spacer--single"></div>
+          <div class="date-spacer date-spacer--single"></div>
+          <div class="date-spacer date-spacer--single"></div>
+          <div class="date-spacer date-spacer--single"></div>
+          <div class="date-spacer date-spacer--single"></div>
+          <div class="month-row">
+            <span class="date-label">MAY</span>
+          </div>
+          <div class="date-spacer date-spacer--single"></div>
+          <div class="date-spacer date-spacer--single"></div>
+          <div class="date-spacer"></div>
+          <div class="date-spacer date-spacer--single"></div>
+          <div class="date-spacer date-spacer--single"></div>
+          <div class="date-spacer date-spacer--single"></div>
+          <div class="date-spacer date-spacer--single"></div>
+          <div class="date-spacer date-spacer--single"></div>
+          <div class="date-spacer date-spacer--single"></div>
+          <div class="date-spacer date-spacer--single"></div>
+        </div>
+        <div class="date-column date-column--date-day">
+          <div class="date-row-pair">
+            <span class="date-label">FRIDAY 3RD</span>
+            <span class="date-label">GOOD FRIDAY</span>
+          </div>
+          <div class="date-spacer"></div>
+          <div class="date-row-pair">
+            <span class="date-label">SATURDAY 4TH</span>
+            <span class="date-label">EASTER EVE</span>
+          </div>
+          <div class="date-spacer"></div>
+          <div class="date-row-pair">
+            <span class="date-label">SUNDAY 5TH</span>
+            <span class="date-label">EASTER SUNDAY</span>
+          </div>
+          <div class="date-spacer"></div>
+          <div class="date-row-pair">
+            <span class="date-label">TUESDAY 7TH</span>
+          </div>
+          <div class="date-spacer date-spacer--single"></div>
+          <div class="date-row-pair">
+            <span class="date-label">FRIDAY 10TH</span>
+          </div>
+          <div class="date-spacer date-spacer--single"></div>
+          <div class="date-row-pair">
+            <span class="date-label">SATURDAY 11TH</span>
+          </div>
+          <div class="date-spacer date-spacer--single"></div>
+          <div class="date-row-pair">
+            <span class="date-label">SUNDAY 12TH</span>
+          </div>
+          <div class="date-spacer date-spacer--single"></div>
+          <div class="date-row-pair">
+            <span class="date-label">TUESDAY 14TH</span>
+          </div>
+          <div class="date-spacer date-spacer--single"></div>
+          <div class="date-row-pair">
+            <span class="date-label">FRIDAY 17TH</span>
+          </div>
+          <div class="date-spacer date-spacer--single"></div>
+          <div class="date-row-pair">
+            <span class="date-label">SATURDAY 19TH</span>
+          </div>
+          <div class="date-spacer date-spacer--single"></div>
+          <div class="date-row-pair">
+            <span class="date-label">SUNDAY 19TH</span>
+          </div>
+          <div class="date-spacer date-spacer--single"></div>
+          <div class="date-row-pair">
+            <span class="date-label">THURSDAY 7TH</span>
+          </div>
+          <div class="date-spacer date-spacer--single"></div>
+          <div class="date-row-pair">
+            <span class="date-label">FRIDAY 8TH</span>
+          </div>
+          <div class="date-spacer date-spacer--single"></div>
+          <div class="date-row-pair">
+            <span class="date-label">SATURDAY 9TH</span>
+          </div>
+          <div class="date-spacer"></div>
+          <div class="date-row-pair">
+            <span class="date-label">SUNDAY 10TH</span>
+          </div>
+          <div class="date-spacer date-spacer--single"></div>
+          <div class="date-row-pair">
+            <span class="date-label">MONDAY 11TH</span>
+          </div>
+          <div class="date-spacer date-spacer--single"></div>
+          <div class="date-row-pair">
+            <span class="date-label">TUESDAY 12TH</span>
+          </div>
+          <div class="date-spacer date-spacer--single"></div>
+          <div class="date-row-pair">
+            <span class="date-label">THURSDAY 14TH</span>
+          </div>
+          <div class="date-spacer date-spacer--single"></div>
+          <div class="date-row-pair">
+            <span class="date-label">FRIDAY 15TH</span>
+          </div>
+          <div class="date-spacer date-spacer--single"></div>
+          <div class="date-row-pair">
+            <span class="date-label">SATURDAY 16TH</span>
+          </div>
+          <div class="date-spacer date-spacer--single"></div>
+          <div class="date-row-pair">
+            <span class="date-label">SUNDAY 17TH</span>
+          </div>
+          <div class="date-spacer date-spacer--single"></div>
+        </div>
+      </aside>
+
+      <section class="events-column">
+        <article class="event-card">
+          <img class="event-card__image" src="https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=560&q=80" alt="Hot chocolate" width="530" height="397">
+          <div class="event-card__content">
+            <h2 class="event-card__title">Hot Chocolate and Easter Quiz in The Lavvo</h2>
+            <p class="event-card__time">14:00</p>
+            <p class="event-card__description">Short description</p>
+            <div class="event-card__actions">
+              <button class="link-explore">Explore</button>
+            </div>
+          </div>
+        </article>
+        <article class="event-card">
+          <img class="event-card__image" src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=560&q=80" alt="Boathouse dinner" width="530" height="397">
+          <div class="event-card__content">
+            <h2 class="event-card__title">Boathouse dinner</h2>
+            <p class="event-card__time">18:00</p>
+            <p class="event-card__description">Short description</p>
+            <div class="event-card__actions">
+              <button class="btn-book">Book <svg class="btn-book__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1 8H15" stroke="currentColor"/><path d="M10 3L15 8L10 13" stroke="currentColor" stroke-miterlimit="2.61313"/></svg></button>
+              <button class="link-explore">Explore</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="event-card">
+          <img class="event-card__image" src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=560&q=80" alt="Easter egg hunt" width="530" height="397">
+          <div class="event-card__content">
+            <h2 class="event-card__title">Easter egg hunt</h2>
+            <p class="event-card__time">13:00</p>
+            <p class="event-card__description">Short description</p>
+            <div class="event-card__actions">
+              <button class="btn-book">Book <svg class="btn-book__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1 8H15" stroke="currentColor"/><path d="M10 3L15 8L10 13" stroke="currentColor" stroke-miterlimit="2.61313"/></svg></button>
+              <button class="link-explore">Explore</button>
+            </div>
+          </div>
+        </article>
+        <article class="event-card">
+          <img class="event-card__image" src="https://images.unsplash.com/photo-1615529328331-f8917597711f?w=560&q=80" alt="Knitting course" width="530" height="397">
+          <div class="event-card__content">
+            <h2 class="event-card__title">Easter themed knitting course</h2>
+            <p class="event-card__time">14:00</p>
+            <p class="event-card__description">Short description</p>
+            <div class="event-card__actions">
+              <button class="btn-book">Book <svg class="btn-book__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1 8H15" stroke="currentColor"/><path d="M10 3L15 8L10 13" stroke="currentColor" stroke-miterlimit="2.61313"/></svg></button>
+              <button class="link-explore">Explore</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="event-card">
+          <img class="event-card__image" src="https://images.unsplash.com/photo-1448375240586-882707db888b?w=560&q=80" alt="Forest walk" width="530" height="397">
+          <div class="event-card__content">
+            <h2 class="event-card__title">Forest walk with the hotel manager</h2>
+            <p class="event-card__time">10:00</p>
+            <p class="event-card__description">Short description</p>
+            <div class="event-card__actions">
+              <button class="btn-book">Book <svg class="btn-book__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1 8H15" stroke="currentColor"/><path d="M10 3L15 8L10 13" stroke="currentColor" stroke-miterlimit="2.61313"/></svg></button>
+              <button class="link-explore">Explore</button>
+            </div>
+          </div>
+        </article>
+        <article class="event-card">
+          <img class="event-card__image" src="https://images.unsplash.com/photo-1476124369491-e7addf5db371?w=560&q=80" alt="Sunday brunch" width="530" height="397">
+          <div class="event-card__content">
+            <h2 class="event-card__title">Sunday Brunch</h2>
+            <p class="event-card__time">13:00</p>
+            <p class="event-card__description">Short description</p>
+            <div class="event-card__actions">
+              <button class="btn-book">Book <svg class="btn-book__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1 8H15" stroke="currentColor"/><path d="M10 3L15 8L10 13" stroke="currentColor" stroke-miterlimit="2.61313"/></svg></button>
+              <button class="link-explore">Explore</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="event-card">
+          <img class="event-card__image" src="https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=560&q=80" alt="Wine tasting" width="530" height="397">
+          <div class="event-card__content">
+            <h2 class="event-card__title">Wine tasting</h2>
+            <p class="event-card__time">16:00</p>
+            <p class="event-card__description">Short description</p>
+            <div class="event-card__actions">
+              <button class="btn-book">Book <svg class="btn-book__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1 8H15" stroke="currentColor"/><path d="M10 3L15 8L10 13" stroke="currentColor" stroke-miterlimit="2.61313"/></svg></button>
+              <button class="link-explore">Explore</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="event-card">
+          <img class="event-card__image" src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=560&q=80" alt="Boathouse dinner" width="530" height="397">
+          <div class="event-card__content">
+            <h2 class="event-card__title">Boathouse dinner</h2>
+            <p class="event-card__time">18:00</p>
+            <p class="event-card__description">Short description</p>
+            <div class="event-card__actions">
+              <button class="btn-book">Book <svg class="btn-book__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1 8H15" stroke="currentColor"/><path d="M10 3L15 8L10 13" stroke="currentColor" stroke-miterlimit="2.61313"/></svg></button>
+              <button class="link-explore">Explore</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="event-card">
+          <img class="event-card__image" src="https://images.unsplash.com/photo-1615529328331-f8917597711f?w=560&q=80" alt="Knitting course" width="530" height="397">
+          <div class="event-card__content">
+            <h2 class="event-card__title">Knitting course</h2>
+            <p class="event-card__time">15:00</p>
+            <p class="event-card__description">Short description</p>
+            <div class="event-card__actions">
+              <button class="btn-book">Book <svg class="btn-book__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1 8H15" stroke="currentColor"/><path d="M10 3L15 8L10 13" stroke="currentColor" stroke-miterlimit="2.61313"/></svg></button>
+              <button class="link-explore">Explore</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="event-card">
+          <img class="event-card__image" src="https://images.unsplash.com/photo-1476124369491-e7addf5db371?w=560&q=80" alt="Sunday brunch" width="530" height="397">
+          <div class="event-card__content">
+            <h2 class="event-card__title">Sunday brunch</h2>
+            <p class="event-card__time">13:00</p>
+            <p class="event-card__description">Short description</p>
+            <div class="event-card__actions">
+              <button class="btn-book">Book <svg class="btn-book__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1 8H15" stroke="currentColor"/><path d="M10 3L15 8L10 13" stroke="currentColor" stroke-miterlimit="2.61313"/></svg></button>
+              <button class="link-explore">Explore</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="event-card">
+          <img class="event-card__image" src="https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=560&q=80" alt="Wine tasting" width="530" height="397">
+          <div class="event-card__content">
+            <h2 class="event-card__title">Wine tasting</h2>
+            <p class="event-card__time">16:00</p>
+            <p class="event-card__description">Short description</p>
+            <div class="event-card__actions">
+              <button class="btn-book">Book <svg class="btn-book__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1 8H15" stroke="currentColor"/><path d="M10 3L15 8L10 13" stroke="currentColor" stroke-miterlimit="2.61313"/></svg></button>
+              <button class="link-explore">Explore</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="event-card">
+          <img class="event-card__image" src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=560&q=80" alt="Boathouse dinner" width="530" height="397">
+          <div class="event-card__content">
+            <h2 class="event-card__title">Boathouse dinner</h2>
+            <p class="event-card__time">18:00</p>
+            <p class="event-card__description">Short description</p>
+            <div class="event-card__actions">
+              <button class="btn-book">Book <svg class="btn-book__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1 8H15" stroke="currentColor"/><path d="M10 3L15 8L10 13" stroke="currentColor" stroke-miterlimit="2.61313"/></svg></button>
+              <button class="link-explore">Explore</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="event-card">
+          <img class="event-card__image" src="https://images.unsplash.com/photo-1615529328331-f8917597711f?w=560&q=80" alt="Knitting course" width="530" height="397">
+          <div class="event-card__content">
+            <h2 class="event-card__title">Knitting course</h2>
+            <p class="event-card__time">15:00</p>
+            <p class="event-card__description">Short description</p>
+            <div class="event-card__actions">
+              <button class="btn-book">Book <svg class="btn-book__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1 8H15" stroke="currentColor"/><path d="M10 3L15 8L10 13" stroke="currentColor" stroke-miterlimit="2.61313"/></svg></button>
+              <button class="link-explore">Explore</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="event-card">
+          <img class="event-card__image" src="https://images.unsplash.com/photo-1476124369491-e7addf5db371?w=560&q=80" alt="Sunday brunch" width="530" height="397">
+          <div class="event-card__content">
+            <h2 class="event-card__title">Sunday brunch</h2>
+            <p class="event-card__time">13:00</p>
+            <p class="event-card__description">Short description</p>
+            <div class="event-card__actions">
+              <button class="btn-book">Book <svg class="btn-book__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1 8H15" stroke="currentColor"/><path d="M10 3L15 8L10 13" stroke="currentColor" stroke-miterlimit="2.61313"/></svg></button>
+              <button class="link-explore">Explore</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="event-card">
+          <img class="event-card__image" src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=560&q=80" alt="Boathouse dinner" width="530" height="397">
+          <div class="event-card__content">
+            <h2 class="event-card__title">Boathouse dinner</h2>
+            <p class="event-card__time">18:00</p>
+            <p class="event-card__description">Short description</p>
+            <div class="event-card__actions">
+              <button class="btn-book">Book <svg class="btn-book__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1 8H15" stroke="currentColor"/><path d="M10 3L15 8L10 13" stroke="currentColor" stroke-miterlimit="2.61313"/></svg></button>
+              <button class="link-explore">Explore</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="event-card">
+          <img class="event-card__image" src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=560&q=80" alt="Boathouse dinner" width="530" height="397">
+          <div class="event-card__content">
+            <h2 class="event-card__title">Boathouse dinner</h2>
+            <p class="event-card__time">18:00</p>
+            <p class="event-card__description">Short description</p>
+            <div class="event-card__actions">
+              <button class="btn-book">Book <svg class="btn-book__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1 8H15" stroke="currentColor"/><path d="M10 3L15 8L10 13" stroke="currentColor" stroke-miterlimit="2.61313"/></svg></button>
+              <button class="link-explore">Explore</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="event-card">
+          <img class="event-card__image" src="https://images.unsplash.com/photo-1615529328331-f8917597711f?w=560&q=80" alt="Knitting course" width="530" height="397">
+          <div class="event-card__content">
+            <h2 class="event-card__title">Knitting course</h2>
+            <p class="event-card__time">15:00</p>
+            <p class="event-card__description">Short description</p>
+            <div class="event-card__actions">
+              <button class="btn-book">Book <svg class="btn-book__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1 8H15" stroke="currentColor"/><path d="M10 3L15 8L10 13" stroke="currentColor" stroke-miterlimit="2.61313"/></svg></button>
+              <button class="link-explore">Explore</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="event-card">
+          <img class="event-card__image" src="https://images.unsplash.com/photo-1476124369491-e7addf5db371?w=560&q=80" alt="Sunday brunch" width="530" height="397">
+          <div class="event-card__content">
+            <h2 class="event-card__title">Sunday brunch</h2>
+            <p class="event-card__time">18:00</p>
+            <p class="event-card__description">Short description</p>
+            <div class="event-card__actions">
+              <button class="btn-book">Book <svg class="btn-book__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1 8H15" stroke="currentColor"/><path d="M10 3L15 8L10 13" stroke="currentColor" stroke-miterlimit="2.61313"/></svg></button>
+              <button class="link-explore">Explore</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="event-card">
+          <img class="event-card__image" src="https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=560&q=80" alt="Lavvo experience" width="530" height="397">
+          <div class="event-card__content">
+            <h2 class="event-card__title">Lavvo experience</h2>
+            <p class="event-card__time">14:00</p>
+            <p class="event-card__description">Short description</p>
+            <div class="event-card__actions">
+              <button class="btn-book">Book <svg class="btn-book__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1 8H15" stroke="currentColor"/><path d="M10 3L15 8L10 13" stroke="currentColor" stroke-miterlimit="2.61313"/></svg></button>
+              <button class="link-explore">Explore</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="event-card">
+          <img class="event-card__image" src="https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=560&q=80" alt="Wine tasting" width="530" height="397">
+          <div class="event-card__content">
+            <h2 class="event-card__title">Wine tasting</h2>
+            <p class="event-card__time">16:00</p>
+            <p class="event-card__description">Short description</p>
+            <div class="event-card__actions">
+              <button class="btn-book">Book <svg class="btn-book__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1 8H15" stroke="currentColor"/><path d="M10 3L15 8L10 13" stroke="currentColor" stroke-miterlimit="2.61313"/></svg></button>
+              <button class="link-explore">Explore</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="event-card">
+          <img class="event-card__image" src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=560&q=80" alt="Boathouse dinner" width="530" height="397">
+          <div class="event-card__content">
+            <h2 class="event-card__title">Boathouse dinner</h2>
+            <p class="event-card__time">18:00</p>
+            <p class="event-card__description">Short description</p>
+            <div class="event-card__actions">
+              <button class="btn-book">Book <svg class="btn-book__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1 8H15" stroke="currentColor"/><path d="M10 3L15 8L10 13" stroke="currentColor" stroke-miterlimit="2.61313"/></svg></button>
+              <button class="link-explore">Explore</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="event-card">
+          <img class="event-card__image" src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=560&q=80" alt="Boathouse dinner" width="530" height="397">
+          <div class="event-card__content">
+            <h2 class="event-card__title">Boathouse dinner</h2>
+            <p class="event-card__time">18:00</p>
+            <p class="event-card__description">Short description</p>
+            <div class="event-card__actions">
+              <button class="btn-book">Book <svg class="btn-book__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1 8H15" stroke="currentColor"/><path d="M10 3L15 8L10 13" stroke="currentColor" stroke-miterlimit="2.61313"/></svg></button>
+              <button class="link-explore">Explore</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="event-card">
+          <img class="event-card__image" src="https://images.unsplash.com/photo-1615529328331-f8917597711f?w=560&q=80" alt="Knitting course" width="530" height="397">
+          <div class="event-card__content">
+            <h2 class="event-card__title">Knitting course</h2>
+            <p class="event-card__time">15:00</p>
+            <p class="event-card__description">Short description</p>
+            <div class="event-card__actions">
+              <button class="btn-book">Book <svg class="btn-book__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1 8H15" stroke="currentColor"/><path d="M10 3L15 8L10 13" stroke="currentColor" stroke-miterlimit="2.61313"/></svg></button>
+              <button class="link-explore">Explore</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="event-card">
+          <img class="event-card__image" src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=560&q=80" alt="Boathouse dinner" width="530" height="397">
+          <div class="event-card__content">
+            <h2 class="event-card__title">Boathouse dinner</h2>
+            <p class="event-card__time">18:00</p>
+            <p class="event-card__description">Short description</p>
+            <div class="event-card__actions">
+              <button class="btn-book">Book <svg class="btn-book__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1 8H15" stroke="currentColor"/><path d="M10 3L15 8L10 13" stroke="currentColor" stroke-miterlimit="2.61313"/></svg></button>
+              <button class="link-explore">Explore</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="event-card">
+          <img class="event-card__image" src="https://images.unsplash.com/photo-1476124369491-e7addf5db371?w=560&q=80" alt="Constitution Day" width="530" height="397">
+          <div class="event-card__content">
+            <h2 class="event-card__title">Constitution Day Celebrations and Sunday Brunch</h2>
+            <p class="event-card__time">13:00</p>
+            <p class="event-card__description">Short description</p>
+            <div class="event-card__actions">
+              <button class="btn-book">Book <svg class="btn-book__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1 8H15" stroke="currentColor"/><path d="M10 3L15 8L10 13" stroke="currentColor" stroke-miterlimit="2.61313"/></svg></button>
+              <button class="link-explore">Explore</button>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+  <script>
+    (function() {
+      const STICKY_TOP = 10;
+      const PUSH_START = 45;
+      const pairs = document.querySelectorAll('.date-column--date-day .date-row-pair');
+      const monthRows = document.querySelectorAll('.date-column--month .month-row');
+
+      function updatePushState(elements) {
+        elements.forEach((el, index) => {
+          const nextEl = elements[index + 1];
+          if (!nextEl) {
+            el.classList.remove('is-pushed');
+            el.style.setProperty('--push-amount', '0px');
+            return;
+          }
+
+          const nextRect = nextEl.getBoundingClientRect();
+          const elHeight = el.offsetHeight;
+
+          if (nextRect.top >= PUSH_START) {
+            el.classList.remove('is-pushed');
+            el.style.setProperty('--push-amount', '0px');
+          } else if (nextRect.top <= STICKY_TOP) {
+            el.classList.add('is-pushed');
+            el.style.setProperty('--push-amount', `-${elHeight + STICKY_TOP + 4}px`);
+          } else {
+            el.classList.add('is-pushed');
+            const progress = 1 - (nextRect.top - STICKY_TOP) / (PUSH_START - STICKY_TOP);
+            const maxTranslate = elHeight + STICKY_TOP + 4;
+            const translate = progress * maxTranslate;
+            el.style.setProperty('--push-amount', `-${translate}px`);
+          }
+        });
+      }
+
+      function updateStickyState() {
+        updatePushState(pairs);
+        updatePushState(monthRows);
+      }
+
+      let rafId = null;
+      window.addEventListener('scroll', function() {
+        if (rafId) cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(function() {
+          updateStickyState();
+          rafId = null;
+        });
+      }, { passive: true });
+
+      updateStickyState();
+    })();
+  </script>
+</body>
+</html>
