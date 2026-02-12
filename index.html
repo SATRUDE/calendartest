@@ -99,6 +99,183 @@
     .date-range-btn::after {
       content: '▼';
       font-size: 10px;
+      display: inline-block;
+      transition: transform 0.2s ease;
+    }
+
+    .date-range-btn.is-open::after {
+      transform: rotate(180deg);
+    }
+
+    /* Date range picker */
+    .date-range-picker {
+      position: relative;
+      display: inline-block;
+    }
+
+    .date-range-picker__dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--background-brand);
+      border: var(--border-width) solid var(--stroke-primary);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      z-index: 100;
+    }
+
+    .date-range-picker__dropdown.is-visible {
+      display: block;
+    }
+
+    .date-range-picker__calendars {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 20px;
+    }
+
+    .date-range-picker__calendar {
+      min-width: 220px;
+    }
+
+    .date-range-picker__calendar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .date-range-picker__calendar-title {
+      font-size: var(--body-md);
+      font-weight: 500;
+    }
+
+    .date-range-picker__month-label {
+      font-size: var(--body-sm);
+      margin-bottom: 8px;
+      color: rgba(0,0,0,0.7);
+    }
+
+    .date-range-picker__month-nav {
+      display: flex;
+      gap: 4px;
+    }
+
+    .date-range-picker__month-btn {
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      font-size: 14px;
+      border: none;
+      background: transparent;
+      color: var(--text-primary);
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .date-range-picker__month-btn:hover {
+      background: rgba(0,0,0,0.06);
+    }
+
+    .date-range-picker__month-btn:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    .date-range-picker__weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      margin-bottom: 6px;
+    }
+
+    .date-range-picker__weekday {
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      text-align: center;
+      color: rgba(0,0,0,0.5);
+    }
+
+    .date-range-picker__days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+    }
+
+    .date-range-picker__day {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--body-sm);
+      border: none;
+      background: transparent;
+      color: var(--text-primary);
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .date-range-picker__day:hover:not(:disabled) {
+      background: rgba(0,0,0,0.06);
+    }
+
+    .date-range-picker__day:disabled,
+    .date-range-picker__day.date-range-picker__day--disabled {
+      color: rgba(0,0,0,0.3);
+      cursor: default;
+    }
+
+    .date-range-picker__day.is-selected {
+      background: var(--stroke-primary);
+      color: var(--background-brand);
+    }
+
+    .date-range-picker__day.is-in-range {
+      background: rgba(0,0,0,0.08);
+    }
+
+    .date-range-picker__day.is-empty {
+      visibility: hidden;
+    }
+
+    .date-range-picker__actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .date-range-picker__btn {
+      padding: 8px 20px;
+      font-family: var(--font-body);
+      font-size: var(--body-sm);
+      font-weight: 500;
+      border-radius: var(--border-radius-pill);
+      cursor: pointer;
+      border: var(--border-width) solid var(--stroke-primary);
+      background: transparent;
+      color: var(--text-primary);
+    }
+
+    .date-range-picker__btn--primary {
+      background: var(--stroke-primary);
+      color: var(--background-brand);
+    }
+
+    .event-card[data-filtered="true"] {
+      display: none;
+    }
+
+    .date-row-pair[data-filtered="true"],
+    .date-spacer[data-filtered="true"],
+    .month-row[data-filtered="true"] {
+      display: none;
     }
 
     /* Main layout - 4 columns: month | date | day label | events */
@@ -311,133 +488,185 @@
     <header class="header">
       <h1 class="header__title">Calendar</h1>
       <p class="header__subtitle">Experiences shaped by Norway's quiet wilderness</p>
-      <button class="date-range-btn" type="button">Date range</button>
+      <div class="date-range-picker">
+        <button class="date-range-btn" type="button" id="date-range-trigger">
+          <span id="date-range-label">Date range</span>
+        </button>
+        <div class="date-range-picker__dropdown" id="date-range-dropdown" aria-hidden="true">
+          <div class="date-range-picker__calendars">
+            <div class="date-range-picker__calendar" data-calendar="from">
+              <div class="date-range-picker__calendar-header">
+                <span class="date-range-picker__calendar-title">From</span>
+                <div class="date-range-picker__month-nav">
+                  <button type="button" class="date-range-picker__month-btn" data-nav="prev" aria-label="Previous month">‹</button>
+                  <button type="button" class="date-range-picker__month-btn" data-nav="next" aria-label="Next month">›</button>
+                </div>
+              </div>
+              <div class="date-range-picker__month-label" data-month-from></div>
+              <div class="date-range-picker__weekdays">
+                <span class="date-range-picker__weekday">S</span>
+                <span class="date-range-picker__weekday">M</span>
+                <span class="date-range-picker__weekday">T</span>
+                <span class="date-range-picker__weekday">W</span>
+                <span class="date-range-picker__weekday">T</span>
+                <span class="date-range-picker__weekday">F</span>
+                <span class="date-range-picker__weekday">S</span>
+              </div>
+              <div class="date-range-picker__days" id="calendar-from-days"></div>
+            </div>
+            <div class="date-range-picker__calendar" data-calendar="to">
+              <div class="date-range-picker__calendar-header">
+                <span class="date-range-picker__calendar-title">To</span>
+                <div class="date-range-picker__month-nav">
+                  <button type="button" class="date-range-picker__month-btn" data-nav="prev" aria-label="Previous month">‹</button>
+                  <button type="button" class="date-range-picker__month-btn" data-nav="next" aria-label="Next month">›</button>
+                </div>
+              </div>
+              <div class="date-range-picker__month-label" data-month-to></div>
+              <div class="date-range-picker__weekdays">
+                <span class="date-range-picker__weekday">S</span>
+                <span class="date-range-picker__weekday">M</span>
+                <span class="date-range-picker__weekday">T</span>
+                <span class="date-range-picker__weekday">W</span>
+                <span class="date-range-picker__weekday">T</span>
+                <span class="date-range-picker__weekday">F</span>
+                <span class="date-range-picker__weekday">S</span>
+              </div>
+              <div class="date-range-picker__days" id="calendar-to-days"></div>
+            </div>
+          </div>
+          <div class="date-range-picker__actions">
+            <button class="date-range-picker__btn" type="button" id="date-range-clear">Clear</button>
+            <button class="date-range-picker__btn date-range-picker__btn--primary" type="button" id="date-range-apply">Apply</button>
+          </div>
+        </div>
+      </div>
     </header>
 
     <main class="calendar-layout">
       <aside class="dates-section">
         <div class="date-column date-column--month">
-          <div class="month-row">
+          <div class="month-row" data-month="april">
             <span class="date-label">APRIL</span>
           </div>
-          <div class="date-spacer"></div>
-          <div class="date-spacer"></div>
-          <div class="date-spacer"></div>
-          <div class="date-spacer date-spacer--single"></div>
-          <div class="date-spacer date-spacer--single"></div>
-          <div class="date-spacer date-spacer--single"></div>
-          <div class="date-spacer date-spacer--single"></div>
-          <div class="date-spacer date-spacer--single"></div>
-          <div class="date-spacer date-spacer--single"></div>
-          <div class="date-spacer date-spacer--single"></div>
-          <div class="date-spacer date-spacer--single"></div>
-          <div class="month-row">
+          <div class="date-spacer" data-month="april"></div>
+          <div class="date-spacer" data-month="april"></div>
+          <div class="date-spacer" data-month="april"></div>
+          <div class="date-spacer date-spacer--single" data-month="april"></div>
+          <div class="date-spacer date-spacer--single" data-month="april"></div>
+          <div class="date-spacer date-spacer--single" data-month="april"></div>
+          <div class="date-spacer date-spacer--single" data-month="april"></div>
+          <div class="date-spacer date-spacer--single" data-month="april"></div>
+          <div class="date-spacer date-spacer--single" data-month="april"></div>
+          <div class="date-spacer date-spacer--single" data-month="april"></div>
+          <div class="date-spacer date-spacer--single" data-month="april"></div>
+          <div class="month-row" data-month="may">
             <span class="date-label">MAY</span>
           </div>
-          <div class="date-spacer date-spacer--single"></div>
-          <div class="date-spacer date-spacer--single"></div>
-          <div class="date-spacer"></div>
-          <div class="date-spacer date-spacer--single"></div>
-          <div class="date-spacer date-spacer--single"></div>
-          <div class="date-spacer date-spacer--single"></div>
-          <div class="date-spacer date-spacer--single"></div>
-          <div class="date-spacer date-spacer--single"></div>
-          <div class="date-spacer date-spacer--single"></div>
-          <div class="date-spacer date-spacer--single"></div>
+          <div class="date-spacer date-spacer--single" data-month="may"></div>
+          <div class="date-spacer date-spacer--single" data-month="may"></div>
+          <div class="date-spacer" data-month="may"></div>
+          <div class="date-spacer date-spacer--single" data-month="may"></div>
+          <div class="date-spacer date-spacer--single" data-month="may"></div>
+          <div class="date-spacer date-spacer--single" data-month="may"></div>
+          <div class="date-spacer date-spacer--single" data-month="may"></div>
+          <div class="date-spacer date-spacer--single" data-month="may"></div>
+          <div class="date-spacer date-spacer--single" data-month="may"></div>
+          <div class="date-spacer date-spacer--single" data-month="may"></div>
         </div>
         <div class="date-column date-column--date-day">
-          <div class="date-row-pair">
+          <div class="date-row-pair" data-date="2025-04-03">
             <span class="date-label">FRIDAY 3RD</span>
             <span class="date-label">GOOD FRIDAY</span>
           </div>
           <div class="date-spacer"></div>
-          <div class="date-row-pair">
+          <div class="date-row-pair" data-date="2025-04-04">
             <span class="date-label">SATURDAY 4TH</span>
             <span class="date-label">EASTER EVE</span>
           </div>
           <div class="date-spacer"></div>
-          <div class="date-row-pair">
+          <div class="date-row-pair" data-date="2025-04-05">
             <span class="date-label">SUNDAY 5TH</span>
             <span class="date-label">EASTER SUNDAY</span>
           </div>
           <div class="date-spacer"></div>
-          <div class="date-row-pair">
+          <div class="date-row-pair" data-date="2025-04-07">
             <span class="date-label">TUESDAY 7TH</span>
           </div>
-          <div class="date-spacer date-spacer--single"></div>
-          <div class="date-row-pair">
+          <div class="date-spacer date-spacer--single" data-month="may"></div>
+          <div class="date-row-pair" data-date="2025-04-10">
             <span class="date-label">FRIDAY 10TH</span>
           </div>
-          <div class="date-spacer date-spacer--single"></div>
-          <div class="date-row-pair">
+          <div class="date-spacer date-spacer--single" data-month="may"></div>
+          <div class="date-row-pair" data-date="2025-04-11">
             <span class="date-label">SATURDAY 11TH</span>
           </div>
-          <div class="date-spacer date-spacer--single"></div>
-          <div class="date-row-pair">
+          <div class="date-spacer date-spacer--single" data-month="may"></div>
+          <div class="date-row-pair" data-date="2025-04-12">
             <span class="date-label">SUNDAY 12TH</span>
           </div>
-          <div class="date-spacer date-spacer--single"></div>
-          <div class="date-row-pair">
+          <div class="date-spacer date-spacer--single" data-month="may"></div>
+          <div class="date-row-pair" data-date="2025-04-14">
             <span class="date-label">TUESDAY 14TH</span>
           </div>
-          <div class="date-spacer date-spacer--single"></div>
-          <div class="date-row-pair">
+          <div class="date-spacer date-spacer--single" data-month="may"></div>
+          <div class="date-row-pair" data-date="2025-04-17">
             <span class="date-label">FRIDAY 17TH</span>
           </div>
-          <div class="date-spacer date-spacer--single"></div>
-          <div class="date-row-pair">
+          <div class="date-spacer date-spacer--single" data-month="may"></div>
+          <div class="date-row-pair" data-date="2025-04-19">
             <span class="date-label">SATURDAY 19TH</span>
           </div>
-          <div class="date-spacer date-spacer--single"></div>
-          <div class="date-row-pair">
+          <div class="date-spacer date-spacer--single" data-month="may"></div>
+          <div class="date-row-pair" data-date="2025-04-20">
             <span class="date-label">SUNDAY 19TH</span>
           </div>
-          <div class="date-spacer date-spacer--single"></div>
-          <div class="date-row-pair">
+          <div class="date-spacer date-spacer--single" data-month="may"></div>
+          <div class="date-row-pair" data-date="2025-05-07">
             <span class="date-label">THURSDAY 7TH</span>
           </div>
-          <div class="date-spacer date-spacer--single"></div>
-          <div class="date-row-pair">
+          <div class="date-spacer date-spacer--single" data-month="may"></div>
+          <div class="date-row-pair" data-date="2025-05-08">
             <span class="date-label">FRIDAY 8TH</span>
           </div>
-          <div class="date-spacer date-spacer--single"></div>
-          <div class="date-row-pair">
+          <div class="date-spacer date-spacer--single" data-month="may"></div>
+          <div class="date-row-pair" data-date="2025-05-09">
             <span class="date-label">SATURDAY 9TH</span>
           </div>
           <div class="date-spacer"></div>
-          <div class="date-row-pair">
+          <div class="date-row-pair" data-date="2025-05-10">
             <span class="date-label">SUNDAY 10TH</span>
           </div>
-          <div class="date-spacer date-spacer--single"></div>
-          <div class="date-row-pair">
+          <div class="date-spacer date-spacer--single" data-month="may"></div>
+          <div class="date-row-pair" data-date="2025-05-11">
             <span class="date-label">MONDAY 11TH</span>
           </div>
-          <div class="date-spacer date-spacer--single"></div>
-          <div class="date-row-pair">
+          <div class="date-spacer date-spacer--single" data-month="may"></div>
+          <div class="date-row-pair" data-date="2025-05-12">
             <span class="date-label">TUESDAY 12TH</span>
           </div>
-          <div class="date-spacer date-spacer--single"></div>
-          <div class="date-row-pair">
+          <div class="date-spacer date-spacer--single" data-month="may"></div>
+          <div class="date-row-pair" data-date="2025-05-14">
             <span class="date-label">THURSDAY 14TH</span>
           </div>
-          <div class="date-spacer date-spacer--single"></div>
-          <div class="date-row-pair">
+          <div class="date-spacer date-spacer--single" data-month="may"></div>
+          <div class="date-row-pair" data-date="2025-05-15">
             <span class="date-label">FRIDAY 15TH</span>
           </div>
-          <div class="date-spacer date-spacer--single"></div>
-          <div class="date-row-pair">
+          <div class="date-spacer date-spacer--single" data-month="may"></div>
+          <div class="date-row-pair" data-date="2025-05-16">
             <span class="date-label">SATURDAY 16TH</span>
           </div>
-          <div class="date-spacer date-spacer--single"></div>
-          <div class="date-row-pair">
+          <div class="date-spacer date-spacer--single" data-month="may"></div>
+          <div class="date-row-pair" data-date="2025-05-17">
             <span class="date-label">SUNDAY 17TH</span>
           </div>
-          <div class="date-spacer date-spacer--single"></div>
+          <div class="date-spacer date-spacer--single" data-month="may"></div>
         </div>
       </aside>
 
       <section class="events-column">
-        <article class="event-card">
+        <article class="event-card" data-date="2025-04-03">
           <img class="event-card__image" src="https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=560&q=80" alt="Hot chocolate" width="530" height="397">
           <div class="event-card__content">
             <h2 class="event-card__title">Hot Chocolate and Easter Quiz in The Lavvo</h2>
@@ -461,7 +690,7 @@
           </div>
         </article>
 
-        <article class="event-card">
+        <article class="event-card" data-date="2025-04-04">
           <img class="event-card__image" src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=560&q=80" alt="Easter egg hunt" width="530" height="397">
           <div class="event-card__content">
             <h2 class="event-card__title">Easter egg hunt</h2>
@@ -473,7 +702,7 @@
             </div>
           </div>
         </article>
-        <article class="event-card">
+        <article class="event-card" data-date="2025-04-04">
           <img class="event-card__image" src="https://images.unsplash.com/photo-1615529328331-f8917597711f?w=560&q=80" alt="Knitting course" width="530" height="397">
           <div class="event-card__content">
             <h2 class="event-card__title">Easter themed knitting course</h2>
@@ -486,7 +715,7 @@
           </div>
         </article>
 
-        <article class="event-card">
+        <article class="event-card" data-date="2025-04-05">
           <img class="event-card__image" src="https://images.unsplash.com/photo-1448375240586-882707db888b?w=560&q=80" alt="Forest walk" width="530" height="397">
           <div class="event-card__content">
             <h2 class="event-card__title">Forest walk with the hotel manager</h2>
@@ -498,7 +727,7 @@
             </div>
           </div>
         </article>
-        <article class="event-card">
+        <article class="event-card" data-date="2025-04-05">
           <img class="event-card__image" src="https://images.unsplash.com/photo-1476124369491-e7addf5db371?w=560&q=80" alt="Sunday brunch" width="530" height="397">
           <div class="event-card__content">
             <h2 class="event-card__title">Sunday Brunch</h2>
@@ -762,14 +991,256 @@
   </div>
   <script>
     (function() {
+      // Event dates by DOM order (for events without data-date)
+      const EVENT_DATES = [
+        '2025-04-03', '2025-04-03', '2025-04-04', '2025-04-04', '2025-04-05', '2025-04-05',
+        '2025-04-07', '2025-04-10', '2025-04-11', '2025-04-12', '2025-04-14', '2025-04-17',
+        '2025-04-19', '2025-04-20', '2025-05-07', '2025-05-08', '2025-05-09', '2025-05-09',
+        '2025-05-10', '2025-05-11', '2025-05-12', '2025-05-14', '2025-05-15', '2025-05-16',
+        '2025-05-17'
+      ];
+
+      function initEventDates() {
+        document.querySelectorAll('.event-card').forEach((card, i) => {
+          if (!card.dataset.date && EVENT_DATES[i]) card.dataset.date = EVENT_DATES[i];
+        });
+        document.querySelectorAll('.date-column--date-day [data-month]').forEach(el => delete el.dataset.month);
+      }
+
+      function formatDateRange(from, to) {
+        if (!from || !to || from === '2025-04-03' && to === '2025-05-17') return 'Date range';
+        const d1 = new Date(from + 'T12:00:00');
+        const d2 = new Date(to + 'T12:00:00');
+        const opts = { day: 'numeric', month: 'short', year: 'numeric' };
+        return d1.toLocaleDateString('en-GB', opts) + ' – ' + d2.toLocaleDateString('en-GB', opts);
+      }
+
+      function updateDateRangeLabel(from, to) {
+        const label = document.getElementById('date-range-label');
+        if (label) label.textContent = formatDateRange(from, to);
+      }
+
+      const DATE_MIN = '2025-04-03';
+      const DATE_MAX = '2025-05-17';
+
+      const dateRangeState = { from: DATE_MIN, to: DATE_MAX };
+      const calendarMonths = { from: { year: 2025, month: 4 }, to: { year: 2025, month: 5 } };
+
+      function toYMD(d) {
+        const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), day = String(d.getDate()).padStart(2, '0');
+        return y + '-' + m + '-' + day;
+      }
+
+      function parseYMD(s) {
+        const [y, m, d] = s.split('-').map(Number);
+        return new Date(y, m - 1, d);
+      }
+
+      function renderCalendar(which, containerId, monthLabelEl) {
+        const { year, month } = calendarMonths[which];
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+        monthLabelEl.textContent = monthNames[month - 1] + ' ' + year;
+
+        const first = new Date(year, month - 1, 1);
+        const last = new Date(year, month, 0);
+        const startPad = first.getDay();
+        const daysInMonth = last.getDate();
+
+        const minD = parseYMD(DATE_MIN);
+        const maxD = parseYMD(DATE_MAX);
+        const fromD = parseYMD(dateRangeState.from);
+        const toD = parseYMD(dateRangeState.to);
+
+        let html = '';
+        for (let i = 0; i < startPad; i++) {
+          html += '<button type="button" class="date-range-picker__day is-empty" disabled></button>';
+        }
+        for (let day = 1; day <= daysInMonth; day++) {
+          const d = new Date(year, month - 1, day);
+          const ymd = toYMD(d);
+          const disabled = d < minD || d > maxD;
+          const isFrom = ymd === dateRangeState.from;
+          const isTo = ymd === dateRangeState.to;
+          const inRange = !disabled && d >= fromD && d <= toD && (dateRangeState.from !== dateRangeState.to);
+          const cls = ['date-range-picker__day'];
+          if (disabled) cls.push('date-range-picker__day--disabled');
+          if (isFrom || isTo) cls.push('is-selected');
+          else if (inRange) cls.push('is-in-range');
+          html += '<button type="button" class="' + cls.join(' ') + '" data-date="' + ymd + '"' + (disabled ? ' disabled' : '') + '>' + day + '</button>';
+        }
+        container.innerHTML = html;
+
+        container.querySelectorAll('.date-range-picker__day:not(:disabled):not(.is-empty)').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const ymd = this.dataset.date;
+            if (which === 'from') {
+              dateRangeState.from = ymd;
+              if (parseYMD(ymd) > toD) dateRangeState.to = ymd;
+            } else {
+              dateRangeState.to = ymd;
+              if (parseYMD(ymd) < fromD) dateRangeState.from = ymd;
+            }
+            renderCalendar('from', 'calendar-from-days', document.querySelector('[data-month-from]'));
+            renderCalendar('to', 'calendar-to-days', document.querySelector('[data-month-to]'));
+          });
+        });
+      }
+
+      function setupMonthNav() {
+        document.querySelectorAll('[data-calendar="from"] .date-range-picker__month-btn[data-nav="prev"]').forEach(btn => {
+          btn.onclick = () => {
+            if (calendarMonths.from.month === 5) { calendarMonths.from.month = 4; calendarMonths.from.year = 2025; }
+            renderCalendar('from', 'calendar-from-days', document.querySelector('[data-month-from]'));
+            renderCalendar('to', 'calendar-to-days', document.querySelector('[data-month-to]'));
+            btn.disabled = calendarMonths.from.month === 4;
+            btn.nextElementSibling.disabled = calendarMonths.from.month === 5;
+          };
+        });
+        document.querySelectorAll('[data-calendar="from"] .date-range-picker__month-btn[data-nav="next"]').forEach(btn => {
+          btn.onclick = () => {
+            if (calendarMonths.from.month === 4) { calendarMonths.from.month = 5; calendarMonths.from.year = 2025; }
+            renderCalendar('from', 'calendar-from-days', document.querySelector('[data-month-from]'));
+            renderCalendar('to', 'calendar-to-days', document.querySelector('[data-month-to]'));
+            btn.disabled = calendarMonths.from.month === 5;
+            btn.previousElementSibling.disabled = calendarMonths.from.month === 4;
+          };
+        });
+        document.querySelectorAll('[data-calendar="to"] .date-range-picker__month-btn[data-nav="prev"]').forEach(btn => {
+          btn.onclick = () => {
+            if (calendarMonths.to.month === 5) { calendarMonths.to.month = 4; calendarMonths.to.year = 2025; }
+            renderCalendar('from', 'calendar-from-days', document.querySelector('[data-month-from]'));
+            renderCalendar('to', 'calendar-to-days', document.querySelector('[data-month-to]'));
+            btn.disabled = calendarMonths.to.month === 4;
+            btn.nextElementSibling.disabled = calendarMonths.to.month === 5;
+          };
+        });
+        document.querySelectorAll('[data-calendar="to"] .date-range-picker__month-btn[data-nav="next"]').forEach(btn => {
+          btn.onclick = () => {
+            if (calendarMonths.to.month === 4) { calendarMonths.to.month = 5; calendarMonths.to.year = 2025; }
+            renderCalendar('from', 'calendar-from-days', document.querySelector('[data-month-from]'));
+            renderCalendar('to', 'calendar-to-days', document.querySelector('[data-month-to]'));
+            btn.disabled = calendarMonths.to.month === 5;
+            btn.previousElementSibling.disabled = calendarMonths.to.month === 4;
+          };
+        });
+      }
+
+      function initDateRangePicker() {
+        const trigger = document.getElementById('date-range-trigger');
+        const dropdown = document.getElementById('date-range-dropdown');
+        const applyBtn = document.getElementById('date-range-apply');
+        const clearBtn = document.getElementById('date-range-clear');
+
+        setupMonthNav();
+
+        trigger.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const isOpen = dropdown.classList.toggle('is-visible');
+          trigger.classList.toggle('is-open', isOpen);
+          dropdown.setAttribute('aria-hidden', !isOpen);
+          if (isOpen) {
+            renderCalendar('from', 'calendar-from-days', document.querySelector('[data-month-from]'));
+            renderCalendar('to', 'calendar-to-days', document.querySelector('[data-month-to]'));
+            dropdown.querySelector('[data-calendar="from"] .date-range-picker__month-btn[data-nav="prev"]').disabled = calendarMonths.from.month === 4;
+            dropdown.querySelector('[data-calendar="from"] .date-range-picker__month-btn[data-nav="next"]').disabled = calendarMonths.from.month === 5;
+            dropdown.querySelector('[data-calendar="to"] .date-range-picker__month-btn[data-nav="prev"]').disabled = calendarMonths.to.month === 4;
+            dropdown.querySelector('[data-calendar="to"] .date-range-picker__month-btn[data-nav="next"]').disabled = calendarMonths.to.month === 5;
+          }
+        });
+
+        document.addEventListener('click', function() {
+          dropdown.classList.remove('is-visible');
+          trigger.classList.remove('is-open');
+          dropdown.setAttribute('aria-hidden', 'true');
+        });
+        dropdown.addEventListener('click', e => e.stopPropagation());
+
+        applyBtn.addEventListener('click', function() {
+          applyDateFilter(dateRangeState.from, dateRangeState.to);
+          updateDateRangeLabel(dateRangeState.from, dateRangeState.to);
+          updateStickyState();
+          dropdown.classList.remove('is-visible');
+          trigger.classList.remove('is-open');
+        });
+
+        clearBtn.addEventListener('click', function() {
+          dateRangeState.from = DATE_MIN;
+          dateRangeState.to = DATE_MAX;
+          calendarMonths.from = { year: 2025, month: 4 };
+          calendarMonths.to = { year: 2025, month: 5 };
+          applyDateFilter(null, null);
+          updateDateRangeLabel(null, null);
+          updateStickyState();
+          dropdown.classList.remove('is-visible');
+          trigger.classList.remove('is-open');
+        });
+      }
+
+      function applyDateFilter(from, to) {
+        const events = document.querySelectorAll('.event-card');
+        const datePairs = document.querySelectorAll('.date-row-pair');
+        const spacers = document.querySelectorAll('.date-spacer');
+        const monthRows = document.querySelectorAll('.month-row');
+
+        const hasFilter = from && to;
+        const fromTime = hasFilter ? new Date(from + 'T00:00:00').getTime() : 0;
+        const toTime = hasFilter ? new Date(to + 'T23:59:59').getTime() : 0;
+
+        const visibleDates = new Set();
+        events.forEach(card => {
+          const date = card.dataset.date;
+          if (!date) return;
+          const inRange = !hasFilter || (new Date(date).getTime() >= fromTime && new Date(date).getTime() <= toTime);
+          card.dataset.filtered = inRange ? 'false' : 'true';
+          if (inRange) visibleDates.add(date);
+        });
+
+        datePairs.forEach(pair => {
+          const date = pair.dataset.date;
+          const visible = !hasFilter || visibleDates.has(date);
+          pair.dataset.filtered = visible ? 'false' : 'true';
+          const spacer = pair.nextElementSibling;
+          if (spacer && spacer.classList.contains('date-spacer')) {
+            spacer.dataset.filtered = visible ? 'false' : 'true';
+          }
+        });
+
+        const aprilDates = ['2025-04-03','2025-04-04','2025-04-05','2025-04-07','2025-04-10','2025-04-11','2025-04-12','2025-04-14','2025-04-17','2025-04-19','2025-04-20'];
+        const mayDates = ['2025-05-07','2025-05-08','2025-05-09','2025-05-10','2025-05-11','2025-05-12','2025-05-14','2025-05-15','2025-05-16','2025-05-17'];
+        const hasApril = !hasFilter || aprilDates.some(d => visibleDates.has(d));
+        const hasMay = !hasFilter || mayDates.some(d => visibleDates.has(d));
+
+        document.querySelectorAll('.date-column--month [data-month="april"]').forEach(el => {
+          el.dataset.filtered = (hasFilter && !hasApril) ? 'true' : 'false';
+        });
+        document.querySelectorAll('.date-column--month [data-month="may"]').forEach(el => {
+          el.dataset.filtered = (hasFilter && !hasMay) ? 'true' : 'false';
+        });
+      }
+
+      initEventDates();
+      initDateRangePicker();
+
       const STICKY_TOP = 10;
       const PUSH_START = 45;
       const pairs = document.querySelectorAll('.date-column--date-day .date-row-pair');
       const monthRows = document.querySelectorAll('.date-column--month .month-row');
 
+      function isElementHidden(el) {
+        return el.dataset?.filtered === 'true' || (el.offsetParent === null && getComputedStyle(el).display === 'none');
+      }
+
       function updatePushState(elements) {
         elements.forEach((el, index) => {
-          const nextEl = elements[index + 1];
+          let nextIndex = index + 1;
+          let nextEl = elements[nextIndex];
+          while (nextEl && isElementHidden(nextEl)) {
+            nextIndex++;
+            nextEl = elements[nextIndex];
+          }
           if (!nextEl) {
             el.classList.remove('is-pushed');
             el.style.setProperty('--push-amount', '0px');
