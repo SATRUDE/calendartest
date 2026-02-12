@@ -96,14 +96,14 @@
       letter-spacing: 0;
     }
 
-    .date-range-btn::after {
-      content: '▼';
-      font-size: 10px;
-      display: inline-block;
+    .date-range-btn__icon {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
       transition: transform 0.2s ease;
     }
 
-    .date-range-btn.is-open::after {
+    .date-range-btn.is-open .date-range-btn__icon {
       transform: rotate(180deg);
     }
 
@@ -500,6 +500,7 @@
       <div class="date-range-picker">
         <button class="date-range-btn" type="button" id="date-range-trigger">
           <span id="date-range-label">Date range</span>
+          <svg class="date-range-btn__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
         </button>
         <div class="date-range-picker__dropdown" id="date-range-dropdown" aria-hidden="true">
           <div class="date-range-picker__calendars">
