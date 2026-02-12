@@ -132,36 +132,39 @@
     }
 
     .date-range-picker__calendars {
-      display: flex;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 24px;
       margin-bottom: 20px;
     }
 
-    .date-range-picker__calendar {
-      min-width: 220px;
-    }
-
-    .date-range-picker__calendar-header {
+    .date-range-picker__header {
+      grid-column: 1 / -1;
       display: flex;
       align-items: center;
       justify-content: space-between;
       margin-bottom: 12px;
     }
 
-    .date-range-picker__calendar-title {
-      font-size: var(--body-md);
-      font-weight: 500;
-    }
-
-    .date-range-picker__month-label {
-      font-size: var(--body-sm);
-      margin-bottom: 8px;
-      color: rgba(0,0,0,0.7);
-    }
-
-    .date-range-picker__month-nav {
+    .date-range-picker__month-labels {
       display: flex;
-      gap: 4px;
+      gap: 48px;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .date-range-picker__header .date-range-picker__month-label {
+      font-size: var(--body-sm);
+      color: rgba(0,0,0,0.7);
+      margin: 0;
+    }
+
+    .date-range-picker__calendar {
+      min-width: 220px;
+    }
+
+    .date-range-picker__calendar .date-range-picker__weekdays {
+      margin-top: 0;
     }
 
     .date-range-picker__month-btn {
@@ -310,6 +313,7 @@
       align-items: flex-start;
       position: sticky;
       top: 10px;
+      z-index: 1;
       background-color: var(--background-brand);
       padding-bottom: 4px;
     }
@@ -320,7 +324,7 @@
 
     .dates-section[data-only-may] .date-column--month .month-row--may .month-row__align {
       display: inline-block;
-      transform: translateY(calc(var(--may-offset-dir, 0) * var(--may-offset, 0px)));
+      transform: translateY(calc(var(--may-offset-dir, 0) * var(--may-offset, 0px) + var(--may-baseline-nudge, 0px)));
     }
 
     .date-column--month .date-label {
@@ -340,6 +344,7 @@
       gap: 8px;
       position: sticky;
       top: 10px;
+      z-index: 1;
       background-color: var(--background-brand);
       padding-bottom: 4px;
     }
@@ -504,15 +509,15 @@
         </button>
         <div class="date-range-picker__dropdown" id="date-range-dropdown" aria-hidden="true">
           <div class="date-range-picker__calendars">
-            <div class="date-range-picker__calendar" data-calendar="from">
-              <div class="date-range-picker__calendar-header">
-                <span class="date-range-picker__calendar-title">From</span>
-                <div class="date-range-picker__month-nav">
-                  <button type="button" class="date-range-picker__month-btn" data-nav="prev" aria-label="Previous month">‹</button>
-                  <button type="button" class="date-range-picker__month-btn" data-nav="next" aria-label="Next month">›</button>
-                </div>
+            <div class="date-range-picker__header">
+              <button type="button" class="date-range-picker__month-btn" data-nav="prev" aria-label="Previous months">‹</button>
+              <div class="date-range-picker__month-labels">
+                <span class="date-range-picker__month-label" data-month-left></span>
+                <span class="date-range-picker__month-label" data-month-right></span>
               </div>
-              <div class="date-range-picker__month-label" data-month-from></div>
+              <button type="button" class="date-range-picker__month-btn" data-nav="next" aria-label="Next months">›</button>
+            </div>
+            <div class="date-range-picker__calendar" data-calendar="left">
               <div class="date-range-picker__weekdays">
                 <span class="date-range-picker__weekday">S</span>
                 <span class="date-range-picker__weekday">M</span>
@@ -524,15 +529,7 @@
               </div>
               <div class="date-range-picker__days" id="calendar-from-days"></div>
             </div>
-            <div class="date-range-picker__calendar" data-calendar="to">
-              <div class="date-range-picker__calendar-header">
-                <span class="date-range-picker__calendar-title">To</span>
-                <div class="date-range-picker__month-nav">
-                  <button type="button" class="date-range-picker__month-btn" data-nav="prev" aria-label="Previous month">‹</button>
-                  <button type="button" class="date-range-picker__month-btn" data-nav="next" aria-label="Next month">›</button>
-                </div>
-              </div>
-              <div class="date-range-picker__month-label" data-month-to></div>
+            <div class="date-range-picker__calendar" data-calendar="right">
               <div class="date-range-picker__weekdays">
                 <span class="date-range-picker__weekday">S</span>
                 <span class="date-range-picker__weekday">M</span>
@@ -1052,7 +1049,7 @@
       const DATE_MAX = '2025-05-17';
 
       const dateRangeState = { from: DATE_MIN, to: DATE_MAX };
-      const calendarMonths = { from: { year: 2025, month: 4 }, to: { year: 2025, month: 5 } };
+      const calendarMonths = { left: { year: 2025, month: 4 }, right: { year: 2025, month: 5 } };
 
       function toYMD(d) {
         const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), day = String(d.getDate()).padStart(2, '0');
@@ -1104,56 +1101,66 @@
         container.querySelectorAll('.date-range-picker__day:not(:disabled):not(.is-empty)').forEach(btn => {
           btn.addEventListener('click', function() {
             const ymd = this.dataset.date;
-            if (which === 'from') {
+            const clickedD = parseYMD(ymd);
+            if (dateRangeState.from === dateRangeState.to) {
+              if (ymd === dateRangeState.from) return;
+              if (clickedD < fromD) {
+                dateRangeState.from = ymd;
+              } else {
+                dateRangeState.to = ymd;
+              }
+            } else if (clickedD < fromD) {
               dateRangeState.from = ymd;
-              if (parseYMD(ymd) > toD) dateRangeState.to = ymd;
-            } else {
+            } else if (clickedD > toD) {
               dateRangeState.to = ymd;
-              if (parseYMD(ymd) < fromD) dateRangeState.from = ymd;
+            } else {
+              dateRangeState.from = ymd;
+              dateRangeState.to = ymd;
             }
-            renderCalendar('from', 'calendar-from-days', document.querySelector('[data-month-from]'));
-            renderCalendar('to', 'calendar-to-days', document.querySelector('[data-month-to]'));
+            renderCalendar('left', 'calendar-from-days', document.querySelector('[data-month-left]'));
+            renderCalendar('right', 'calendar-to-days', document.querySelector('[data-month-right]'));
           });
         });
       }
 
       function setupMonthNav() {
-        document.querySelectorAll('[data-calendar="from"] .date-range-picker__month-btn[data-nav="prev"]').forEach(btn => {
-          btn.onclick = () => {
-            if (calendarMonths.from.month === 5) { calendarMonths.from.month = 4; calendarMonths.from.year = 2025; }
-            renderCalendar('from', 'calendar-from-days', document.querySelector('[data-month-from]'));
-            renderCalendar('to', 'calendar-to-days', document.querySelector('[data-month-to]'));
-            btn.disabled = calendarMonths.from.month === 4;
-            btn.nextElementSibling.disabled = calendarMonths.from.month === 5;
+        const minDate = parseYMD(DATE_MIN);
+        const maxDate = parseYMD(DATE_MAX);
+        const prevBtn = document.querySelector('.date-range-picker__header .date-range-picker__month-btn[data-nav="prev"]');
+        const nextBtn = document.querySelector('.date-range-picker__header .date-range-picker__month-btn[data-nav="next"]');
+
+        function updateNavState() {
+          const leftFirst = new Date(calendarMonths.left.year, calendarMonths.left.month - 1, 1);
+          const rightLast = new Date(calendarMonths.right.year, calendarMonths.right.month, 0);
+          if (prevBtn) prevBtn.disabled = leftFirst <= minDate;
+          if (nextBtn) nextBtn.disabled = rightLast >= maxDate;
+        }
+
+        if (prevBtn) {
+          prevBtn.onclick = () => {
+            const { year, month } = calendarMonths.left;
+            const prev = month === 1 ? { year: year - 1, month: 12 } : { year, month: month - 1 };
+            calendarMonths.left = prev;
+            const nextMonth = prev.month === 12 ? { year: prev.year + 1, month: 1 } : { year: prev.year, month: prev.month + 1 };
+            calendarMonths.right = nextMonth;
+            renderCalendar('left', 'calendar-from-days', document.querySelector('[data-month-left]'));
+            renderCalendar('right', 'calendar-to-days', document.querySelector('[data-month-right]'));
+            updateNavState();
           };
-        });
-        document.querySelectorAll('[data-calendar="from"] .date-range-picker__month-btn[data-nav="next"]').forEach(btn => {
-          btn.onclick = () => {
-            if (calendarMonths.from.month === 4) { calendarMonths.from.month = 5; calendarMonths.from.year = 2025; }
-            renderCalendar('from', 'calendar-from-days', document.querySelector('[data-month-from]'));
-            renderCalendar('to', 'calendar-to-days', document.querySelector('[data-month-to]'));
-            btn.disabled = calendarMonths.from.month === 5;
-            btn.previousElementSibling.disabled = calendarMonths.from.month === 4;
+        }
+        if (nextBtn) {
+          nextBtn.onclick = () => {
+            const { year, month } = calendarMonths.right;
+            const next = month === 12 ? { year: year + 1, month: 1 } : { year, month: month + 1 };
+            calendarMonths.right = next;
+            const prevMonth = next.month === 1 ? { year: next.year - 1, month: 12 } : { year: next.year, month: next.month - 1 };
+            calendarMonths.left = prevMonth;
+            renderCalendar('left', 'calendar-from-days', document.querySelector('[data-month-left]'));
+            renderCalendar('right', 'calendar-to-days', document.querySelector('[data-month-right]'));
+            updateNavState();
           };
-        });
-        document.querySelectorAll('[data-calendar="to"] .date-range-picker__month-btn[data-nav="prev"]').forEach(btn => {
-          btn.onclick = () => {
-            if (calendarMonths.to.month === 5) { calendarMonths.to.month = 4; calendarMonths.to.year = 2025; }
-            renderCalendar('from', 'calendar-from-days', document.querySelector('[data-month-from]'));
-            renderCalendar('to', 'calendar-to-days', document.querySelector('[data-month-to]'));
-            btn.disabled = calendarMonths.to.month === 4;
-            btn.nextElementSibling.disabled = calendarMonths.to.month === 5;
-          };
-        });
-        document.querySelectorAll('[data-calendar="to"] .date-range-picker__month-btn[data-nav="next"]').forEach(btn => {
-          btn.onclick = () => {
-            if (calendarMonths.to.month === 4) { calendarMonths.to.month = 5; calendarMonths.to.year = 2025; }
-            renderCalendar('from', 'calendar-from-days', document.querySelector('[data-month-from]'));
-            renderCalendar('to', 'calendar-to-days', document.querySelector('[data-month-to]'));
-            btn.disabled = calendarMonths.to.month === 5;
-            btn.previousElementSibling.disabled = calendarMonths.to.month === 4;
-          };
-        });
+        }
+        updateNavState();
       }
 
       function initDateRangePicker() {
@@ -1170,12 +1177,9 @@
           trigger.classList.toggle('is-open', isOpen);
           dropdown.setAttribute('aria-hidden', !isOpen);
           if (isOpen) {
-            renderCalendar('from', 'calendar-from-days', document.querySelector('[data-month-from]'));
-            renderCalendar('to', 'calendar-to-days', document.querySelector('[data-month-to]'));
-            dropdown.querySelector('[data-calendar="from"] .date-range-picker__month-btn[data-nav="prev"]').disabled = calendarMonths.from.month === 4;
-            dropdown.querySelector('[data-calendar="from"] .date-range-picker__month-btn[data-nav="next"]').disabled = calendarMonths.from.month === 5;
-            dropdown.querySelector('[data-calendar="to"] .date-range-picker__month-btn[data-nav="prev"]').disabled = calendarMonths.to.month === 4;
-            dropdown.querySelector('[data-calendar="to"] .date-range-picker__month-btn[data-nav="next"]').disabled = calendarMonths.to.month === 5;
+            renderCalendar('left', 'calendar-from-days', document.querySelector('[data-month-left]'));
+            renderCalendar('right', 'calendar-to-days', document.querySelector('[data-month-right]'));
+            setupMonthNav();
           }
         });
 
@@ -1189,7 +1193,9 @@
         applyBtn.addEventListener('click', function() {
           applyDateFilter(dateRangeState.from, dateRangeState.to);
           updateDateRangeLabel(dateRangeState.from, dateRangeState.to);
-          updateStickyState();
+          requestAnimationFrame(function() {
+            requestAnimationFrame(updateStickyState);
+          });
           dropdown.classList.remove('is-visible');
           trigger.classList.remove('is-open');
         });
@@ -1197,11 +1203,13 @@
         clearBtn.addEventListener('click', function() {
           dateRangeState.from = DATE_MIN;
           dateRangeState.to = DATE_MAX;
-          calendarMonths.from = { year: 2025, month: 4 };
-          calendarMonths.to = { year: 2025, month: 5 };
+          calendarMonths.left = { year: 2025, month: 4 };
+          calendarMonths.right = { year: 2025, month: 5 };
           applyDateFilter(null, null);
           updateDateRangeLabel(null, null);
-          updateStickyState();
+          requestAnimationFrame(function() {
+            requestAnimationFrame(updateStickyState);
+          });
           dropdown.classList.remove('is-visible');
           trigger.classList.remove('is-open');
         });
@@ -1259,31 +1267,37 @@
         const ds = document.querySelector('.dates-section');
         if (hasFilter && hasMay) {
           if (ds) ds.dataset.onlyMay = 'true';
+          const mayOnly = !hasApril;
           requestAnimationFrame(function() {
             requestAnimationFrame(function() {
-            const mayRow = document.querySelector('.date-column--month .month-row[data-month="may"]');
-            const firstMayPair = Array.from(document.querySelectorAll('.date-column--date-day .date-row-pair')).find(function(p) {
-              return p.dataset.date && p.dataset.date.startsWith('2025-05') && p.dataset.filtered !== 'true';
-            });
-            const r1 = mayRow?.getBoundingClientRect();
-            const r2 = firstMayPair?.getBoundingClientRect();
-            const offset = r1 && r2 ? r1.top - r2.top : 0;
-            if (ds) {
-              if (offset !== 0) {
-                ds.style.setProperty('--may-offset', `${Math.abs(offset)}px`);
-                ds.style.setProperty('--may-offset-dir', offset > 0 ? '-1' : '1');
-              } else {
-                ds.style.setProperty('--may-offset', '4px');
-                ds.style.setProperty('--may-offset-dir', '1');
+              const mayRow = document.querySelector('.date-column--month .month-row[data-month="may"]');
+              const mayLabel = mayRow?.querySelector('.date-label');
+              const firstMayPair = Array.from(document.querySelectorAll('.date-column--date-day .date-row-pair')).find(function(p) {
+                return p.dataset.date && p.dataset.date.startsWith('2025-05') && p.dataset.filtered !== 'true';
+              });
+              const firstDateLabel = firstMayPair?.querySelector('.date-label');
+              const r1 = (mayLabel || mayRow)?.getBoundingClientRect();
+              const r2 = (firstDateLabel || firstMayPair)?.getBoundingClientRect();
+              const offset = r1 && r2 ? r1.top - r2.top : 0;
+              const baselineNudge = mayOnly ? 0.5 : 2;
+              if (ds) {
+                ds.style.setProperty('--may-baseline-nudge', baselineNudge + 'px');
+                if (offset !== 0) {
+                  ds.style.setProperty('--may-offset', `${Math.abs(offset)}px`);
+                  ds.style.setProperty('--may-offset-dir', offset > 0 ? '-1' : '1');
+                } else {
+                  ds.style.setProperty('--may-offset', '0px');
+                  ds.style.setProperty('--may-offset-dir', '0');
+                }
               }
               if (typeof updateStickyState === 'function') updateStickyState();
-            }
             });
           });
         } else if (ds) {
           delete ds.dataset.onlyMay;
           ds.style.removeProperty('--may-offset');
           ds.style.removeProperty('--may-offset-dir');
+          ds.style.removeProperty('--may-baseline-nudge');
         }
       }
 
@@ -1292,8 +1306,8 @@
 
       const STICKY_TOP = 10;
       const PUSH_START = 45;
-      const pairs = document.querySelectorAll('.date-column--date-day .date-row-pair');
-      const monthRows = document.querySelectorAll('.date-column--month .month-row');
+      const pairsSelector = '.date-column--date-day .date-row-pair';
+      const monthRowsSelector = '.date-column--month .month-row';
 
       function isElementHidden(el) {
         return el.dataset?.filtered === 'true' || (el.offsetParent === null && getComputedStyle(el).display === 'none');
@@ -1333,8 +1347,10 @@
       }
 
       function updateStickyState() {
-        updatePushState(pairs);
-        updatePushState(monthRows);
+        const pairs = document.querySelectorAll(pairsSelector);
+        const monthRows = document.querySelectorAll(monthRowsSelector);
+        updatePushState(Array.from(pairs).filter(function(el) { return !isElementHidden(el); }));
+        updatePushState(Array.from(monthRows).filter(function(el) { return !isElementHidden(el); }));
       }
 
       let rafId = null;
