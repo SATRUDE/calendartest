@@ -322,11 +322,6 @@
       transform: translateY(var(--push-amount, 0));
     }
 
-    .dates-section[data-only-may] .date-column--month .month-row--may .month-row__align {
-      display: inline-block;
-      transform: translateY(calc(var(--may-offset-dir, 0) * var(--may-offset, 0px) + var(--may-baseline-nudge, 0px)));
-    }
-
     .date-column--month .date-label {
       width: auto;
       min-width: auto;
@@ -568,7 +563,7 @@
           <div class="date-spacer date-spacer--single" data-month="april" data-date="2025-04-19"></div>
           <div class="date-spacer date-spacer--single" data-month="april" data-date="2025-04-20"></div>
           <div class="month-row month-row--may" data-month="may">
-            <span class="month-row__align"><span class="date-label">MAY</span></span>
+            <span class="date-label">MAY</span>
           </div>
           <div class="date-spacer date-spacer--single" data-month="may" data-date="2025-05-07"></div>
           <div class="date-spacer date-spacer--single" data-month="may" data-date="2025-05-08"></div>
@@ -1264,40 +1259,12 @@
           }
         });
 
-        const ds = document.querySelector('.dates-section');
         if (hasFilter && hasMay) {
-          if (ds) ds.dataset.onlyMay = 'true';
-          const mayOnly = !hasApril;
           requestAnimationFrame(function() {
             requestAnimationFrame(function() {
-              const mayRow = document.querySelector('.date-column--month .month-row[data-month="may"]');
-              const mayLabel = mayRow?.querySelector('.date-label');
-              const firstMayPair = Array.from(document.querySelectorAll('.date-column--date-day .date-row-pair')).find(function(p) {
-                return p.dataset.date && p.dataset.date.startsWith('2025-05') && p.dataset.filtered !== 'true';
-              });
-              const firstDateLabel = firstMayPair?.querySelector('.date-label');
-              const r1 = (mayLabel || mayRow)?.getBoundingClientRect();
-              const r2 = (firstDateLabel || firstMayPair)?.getBoundingClientRect();
-              const offset = r1 && r2 ? r1.top - r2.top : 0;
-              const baselineNudge = mayOnly ? 0.5 : 2;
-              if (ds) {
-                ds.style.setProperty('--may-baseline-nudge', baselineNudge + 'px');
-                if (offset !== 0) {
-                  ds.style.setProperty('--may-offset', `${Math.abs(offset)}px`);
-                  ds.style.setProperty('--may-offset-dir', offset > 0 ? '-1' : '1');
-                } else {
-                  ds.style.setProperty('--may-offset', '0px');
-                  ds.style.setProperty('--may-offset-dir', '0');
-                }
-              }
               if (typeof updateStickyState === 'function') updateStickyState();
             });
           });
-        } else if (ds) {
-          delete ds.dataset.onlyMay;
-          ds.style.removeProperty('--may-offset');
-          ds.style.removeProperty('--may-offset-dir');
-          ds.style.removeProperty('--may-baseline-nudge');
         }
       }
 
